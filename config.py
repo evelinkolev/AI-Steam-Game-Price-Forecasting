@@ -1,31 +1,28 @@
-import os
-from dotenv import load_dotenv
 from openai import OpenAI
-
-# Load environment variables from .env file
-load_dotenv()
-
+import streamlit as st
 
 class Config:
     """Configuration class for setting up the NVIDIA API."""
 
     # API credentials and parameters
-    NVIDIA_API_KEY = os.getenv("NVIDIA_API_KEY")
-    if not NVIDIA_API_KEY:
-        raise ValueError("NVIDIA_API_KEY not found in environment variables")
+    @property
+    def NVIDIA_API_KEY(self):
+        api_key = st.secrets.get("NVIDIA_API_KEY")
+        if not api_key:
+            raise ValueError("NVIDIA_API_KEY not found in Streamlit secrets")
+        return api_key
 
     BASE_URL = "https://integrate.api.nvidia.com/v1"
     MODEL_NAME = "nvidia/llama-3.1-nemotron-70b-instruct"
 
     # Completion request parameters
     COMPLETION_PARAMS = {
-        "temperature": 0.5,
+        "temperature": 0.3,
         "top_p": 1,
         "max_tokens": 1024,
         "stream": True
     }
 
-    @classmethod
-    def create_client(cls) -> OpenAI:
+    def create_client(self) -> OpenAI:
         """Create and return an OpenAI client configured for NVIDIA API."""
-        return OpenAI(api_key=cls.NVIDIA_API_KEY, base_url=cls.BASE_URL)
+        return OpenAI(api_key=self.NVIDIA_API_KEY, base_url=self.BASE_URL)
